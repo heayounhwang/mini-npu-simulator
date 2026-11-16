@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import time
 
+# 과제 권장 절대 허용오차. 점수(MAC 누적값) 단위이며 상대 오차가 아니다.
 EPSILON = 1e-9
 REPEATS = 1000
 
@@ -82,6 +83,7 @@ def mac_score_flat(pattern, filter_values):
 
 
 def benchmark(pattern, filter_matrix, repeats, operation=mac_score):
+    """준비 호출 1회는 제외하고, 이어지는 repeats회 MAC 호출의 평균 ms를 반환한다."""
     # 검증, JSON 읽기, 화면 출력은 측정 구간에서 제외한다.
     operation(pattern, filter_matrix)
     start = time.perf_counter()
@@ -153,7 +155,9 @@ def run_manual(repeats, generated_filters=False):
     score_a = mac_score(pattern, filter_a)
     score_b = mac_score(pattern, filter_b)
     print("\nA 점수: {:.16g}\nB 점수: {:.16g}".format(score_a, score_b))
-    print("판정:", decide(score_a, score_b, "A", "B"))
+    prediction = decide(score_a, score_b, "A", "B")
+    # 내부 라벨은 공통으로 유지하고 모드 1의 동점 표시만 한글로 변환한다.
+    print("판정:", "판정 불가" if prediction == "UNDECIDED" else prediction)
     print_performance(repeats, [(3, pattern, filter_a)])
     print_layout_comparison(repeats, [(3, pattern, filter_a)])
 
@@ -200,6 +204,7 @@ def load_filters(raw, size):
 
 
 def analyze_data(data):
+    # 모드 2의 UNDECIDED는 정답 라벨(Cross/X)과 다르므로 FAIL로 집계한다.
     if not isinstance(data, dict):
         raise ValueError("JSON 최상위는 객체여야 합니다.")
     filters = data.get("filters")

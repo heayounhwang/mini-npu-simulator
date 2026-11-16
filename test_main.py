@@ -23,6 +23,26 @@ def sample_data():
 
 
 class SimulatorTests(unittest.TestCase):
+    def test_manual_tie_cli_uses_korean_display(self):
+        import os
+        env = dict(os.environ, PYTHONIOENCODING="utf-8")
+        result = subprocess.run(
+            [sys.executable, str(Path(app.__file__)), "--mode", "1",
+             "--generated-filters", "--repeats", "10"],
+            input="0 0 0\n0 0 0\n0 0 0\n", capture_output=True,
+            encoding="utf-8", env=env)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("판정: 판정 불가", result.stdout)
+        self.assertNotIn("판정: UNDECIDED", result.stdout)
+
+    def test_label_variants_and_rejection(self):
+        for value, expected in (("+", "Cross"), ("cross", "Cross"),
+                                (" Cross ", "Cross"), ("x", "X"), (" X ", "X")):
+            self.assertEqual(app.normalize_label(value), expected)
+        for invalid in ("?", "UNDECIDED", None):
+            with self.assertRaises(ValueError):
+                app.normalize_label(invalid)
+
     def test_generator_shapes_and_even_policy(self):
         for size in (1, 2, 3, 5, 8, 13, 25):
             pair = app.generate_filters(size)
