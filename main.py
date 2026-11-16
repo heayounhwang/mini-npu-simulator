@@ -131,12 +131,18 @@ def read_matrix(name, size=3):
     print("\n{}: 각 줄에 숫자 {}개를 공백으로 구분해 {}줄 입력하세요.".format(name, size, size))
     matrix = []
     while len(matrix) < size:
+        values = input("{}행 > ".format(len(matrix) + 1)).split()
+        if len(values) != size:
+            print("입력 형식 오류: 열 수 불일치 (필요: {}, 입력: {}). 해당 행을 다시 입력하세요.".format(
+                size, len(values)))
+            continue
         try:
-            row = [float(value) for value in input("{}행 > ".format(len(matrix) + 1)).split()]
-            if len(row) != size or any(not math.isfinite(value) for value in row):
-                raise ValueError
+            row = [float(value) for value in values]
         except ValueError:
-            print("입력 형식 오류: 유한한 숫자 {}개를 공백으로 구분해 입력하세요.".format(size))
+            print("입력 형식 오류: 숫자 변환 실패. 숫자 {}개를 공백으로 구분해 다시 입력하세요.".format(size))
+            continue
+        if any(not math.isfinite(value) for value in row):
+            print("입력 형식 오류: NaN 또는 무한대는 사용할 수 없습니다. 유한한 숫자로 다시 입력하세요.")
             continue
         matrix.append(row)
     return matrix

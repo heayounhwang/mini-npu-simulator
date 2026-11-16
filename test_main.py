@@ -188,6 +188,9 @@ class SimulatorTests(unittest.TestCase):
             matrix = app.read_matrix("test")
         self.assertEqual(matrix, app.generate_filters(3)["Cross"])
         self.assertEqual(out.getvalue().count("입력 형식 오류"), 3)
+        self.assertIn("열 수 불일치 (필요: 3, 입력: 2)", out.getvalue())
+        self.assertIn("숫자 변환 실패", out.getvalue())
+        self.assertIn("NaN 또는 무한대", out.getvalue())
 
     def test_manual_cli(self):
         entries = "0 1 0\n1 1 1\n0 1 0\n1 0 1\n0 1 0\n1 0 1\n1 0 1\n0 1 0\n1 0 1\n"
